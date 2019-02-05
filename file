@@ -1,0 +1,320 @@
+<div class="container">
+  <div class="row">
+    <h3>
+      {{title}}
+    </h3>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <label>
+        Enter the ID of a video to retrieve. You can get the ID from the URL of the video. The italisized part is an
+        example of a video ID: https://www.twitch.tv/videos/<em>49835590</em>
+        <form #f="ngForm" (ngSubmit)="onSubmit(f)">
+          <input name="videoID" ngModel required placeholder="Video ID">
+          <button>Retrieve</button>
+        </form>
+      </label>
+    </div>
+  </div>
+
+  <div [ngSwitch]="videoDataState">
+    <div *ngSwitchCase="'populated'">
+      <div class="row">
+        <div class="col-12">
+          <h3>Video: {{video.title}}</h3>
+          <small>Description: {{video.description}}</small>
+        </div>
+        <div class="col-12">
+          <img src="{{video.preview.medium}}" alt="thumbnail preview">
+        </div>
+      </div>
+      <ul class="row">
+        <li class="col-12 col-sm-6">ID: {{video._id}}</li>
+        <li class="col-12 col-sm-6">Broadcast type: {{video.broadcast_type}}</li>
+        <li class="col-12 col-sm-6" title="{{video.created_at}}">Created at: {{video.created_at | date:'long'}}</li>
+        <li class="col-12 col-sm-6">Game: {{video.game}}</li>
+        <li class="col-12 col-sm-6" title="{{video.published_at}}">Published at: {{video.published_at | date:'long'}}</li>
+        <li class="col-12 col-sm-6">Length: {{video.length | hoursMinutesSeconds}}</li>
+        <li class="col-12 col-sm-6" title="{{video.recorded_at}}">Recorded at: {{video.recorded_at | date:'long'}}</li>
+        <li class="col-12 col-sm-6">Views: {{video.views}}</li>
+        <li class="col-12 col-sm-6">Viewable: {{video.viewable}}</li>
+        <li class="col-12 col-sm-6">Language: {{video.language}}</li>
+      </ul>
+      <div>Tag list:
+        <span [ngIf]="video.tag_list" [ngIfElse]="noTags" *ngFor="let tag of video.tag_list">{{tag}},</span>
+        <span #noTags>There are no tags associated with this video</span>
+      </div>
+    </div>
+    <div *ngSwitchCase="'none'" class="row">
+      <div class="col-12">Enter a video ID to retrieve video information...</div>
+    </div>
+    <div *ngSwitchDefault class="row">
+      <div class="col-12">. . .</div>
+    </div>
+  </div>
+
+  <!-- <router-outlet></router-outlet> -->
+
+  <div id="footer">
+    <p>Project by <a href="https://twitch.tv/homegrowndufuss">HomegrownDufuss</a> 2019</p>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+import { Component } from '@angular/core';
+import { Video } from './video';
+import { VideoService } from './video.service';
+
+import {NgForm} from '@angular/forms';
+import { FormControl } from '@angular/forms';
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent {
+  title = 'twitch-when';
+  video: Video;
+  videoError: any;
+  videoID: number;
+  loading: boolean;
+  videoDataState: string;
+
+
+  constructor(private videoService: VideoService) {
+    this.loading = false;
+    this.videoDataState = "none";
+    console.log("Videodatastate:", this.videoDataState);
+  }
+
+  onSubmit(f: NgForm) {
+    console.log('submit');
+    console.log('videoid: ', this.videoID);
+    console.log(f.value);  // { first: '', last: '' }
+    console.log(f.valid);  // false
+    this.loading = true;
+    this.videoDataState = "loading";
+    console.log("Videodatastate:", this.videoDataState);
+    this.getVideo(f.value.videoID);
+  }
+
+  getVideo(videoID: number): void {
+    console.log('videoID:',videoID);
+    this.videoService.getVideoById(videoID)
+      .subscribe(
+        (video: Video) => { this.video = { ...video }; this.videoDataState = "populated";console.log("Videodatastate:", this.videoDataState);;}, // success path
+        error => {this.videoError = error; this.videoDataState = "none";} // error path
+        );
+  }
+
+}
+
+
+
+
+
+
+
+#footer {
+  border-top: solid rgb(120, 120, 120) 1px;
+  padding-top: 10px;
+  margin-top: 30px;
+  text-align: right;
+  p {
+    color: rgb(120, 120, 120);
+    font-size: 10px;
+  }
+  a {
+    color: rgb(140, 140, 140)
+  }
+}
+
+
+/* You can add global styles to this file, and also import other style files */
+body {
+  background-color: #000;
+  color: #b9b9b9;
+}
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>TwitchWhen</title>
+  <base href="/">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
+
+
+
+
+
+export class Video {
+    title: string;
+    description: string;
+    // description_html: My new Ocarina of Time speedrun personal best!  During a race!<br>;
+    // broadcast_id: 6743433744;
+    broadcast_type: string;
+    // status: recorded;
+    tag_list: any;
+    views: number;
+    url: string;
+    language: string;
+    created_at: string;
+    viewable: string;
+    // viewable_at: null;
+    published_at: string;
+    _id: string;
+    recorded_at: string;
+    game: string;
+    // communities: null;
+    length: 1445;
+    preview: {
+        small: string;
+        medium: string;
+        large: string;
+        template: string
+    };
+    animated_preview_url: string;
+    // thumbnails: {
+    //     small: [
+    //         {
+    //             type: string;
+    //             url: string;
+    //         }
+    //     ];
+    //     medium: [
+    //         {
+    //             type: string;
+    //             url: string;
+    //         }
+    //     ];
+    //     large: [
+    //         {
+    //             type: string;
+    //             url: string;
+    //         }
+    //     ];
+    //     template: [
+    //         {
+    //             type: string;
+    //             url: string;
+    //         }
+    //     ]
+    // };
+    // fps: {};
+    // seek_previews_url: https://vod-storyboards.twitch.tv/4f9fe91982/homegrowndufuss_6743433744_6743433744/storyboards/49835590-info.json;
+    // resolutions: {
+        // chunked: 640x360
+    // };
+    // restriction: ;
+    channel: {
+        // mature: false;
+        // status: Runway Secret Agent World Record Attempts;
+        // broadcaster_language: en;
+        // broadcaster_software: unknown_rtmp;
+        display_name: string;
+        // game: GoldenEye 007;
+        // language: en;
+        // _id: 40549613;
+        // name: homegrowndufuss;
+        created_at: string;
+        updated_at: string;
+        // partner: false;
+        // logo: https://static-cdn.jtvnw.net/jtv_user_pictures/homegrowndufuss-profile_image-179a9f4637277080-300x300.jpeg;
+        // video_banner: null;
+        // profile_banner: https://static-cdn.jtvnw.net/jtv_user_pictures/homegrowndufuss-profile_banner-615d4e817a31216d-480.jpeg;
+        // profile_banner_background_color: ;
+        // url: https://www.twitch.tv/homegrowndufuss;
+        // views: 4086;
+        // followers: 64;
+        // broadcaster_type: ;
+        // description: Hello welcome to nice stream.  Enjoy please understand I play fast;
+        // private_video: false;
+        // privacy_options_enabled: false
+    };
+    // increment_view_count_url: https://countess.twitch.tv/ping.gif?u=%7B%22id%22%3A%2249835590%22%2C%22type%22%3A%22vod%22%7D
+}
+
+
+
+
+
+
+
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Video } from './video';
+
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+const httpOptions = {
+  headers: new HttpHeaders({
+    'client-id': '043z99mzln9za03p4vcp912ilt4u74',
+    'Accept':'application/vnd.twitchtv.v5+json'
+  })
+};
+
+@Injectable({
+  providedIn: 'root'
+})
+export class VideoService {
+  apiURL: string = 'https://api.twitch.tv/kraken/videos/';
+
+  constructor(private httpClient: HttpClient) { }
+
+  public getVideoById(id: number): Observable<Video> {
+    let videoDataObservable: Observable<Video>;
+    videoDataObservable = this.httpClient.get<Video>(`${this.apiURL}/${id}`, httpOptions)
+      .pipe(
+        tap (video => console.log('Video object:', video))
+        //TODO: make messageService
+        // tap(video => this.messageService.add(`VideoService: fetched video id=${video.id}`))
+      );
+    return videoDataObservable;
+  }
+}
+
+
+
+
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'hoursMinutesSeconds'
+})
+export class HoursMinutesSecondsPipe implements PipeTransform {
+
+  transform(value: number, args?: any): any {
+    const hours: number = Math.floor(value / 60 / 60);
+    const minutes: number = Math.floor((value-hours*60*60) / 60);
+    const seconds: number = (value - minutes * 60);
+
+    let hoursString: string = hours.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
+    let minutesString: string = minutes.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
+    let secondsString: string = seconds.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
+
+    return hoursString + ':' + minutesString + ':' + secondsString;
+  }
+
+}
