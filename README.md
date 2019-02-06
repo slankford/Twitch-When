@@ -2,6 +2,11 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.0.
 
+# What is?
+
+This is a small project using Twitch.tv API to access information about videos. The Twitch website does not display many details, such as specific time posted. This pulls the info from the API and displays it in a userfriendly manner.
+
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
