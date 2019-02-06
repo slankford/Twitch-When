@@ -1,0 +1,2 @@
+This project is mostly just to see the exact date of videos on Twitch.tv. When viewing a video, it shows an approximate time such as "6 years ago;" however, the API provides much richer data. 
+This app is to quickly retrieve that data and display it in a user-friendly way
